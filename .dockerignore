@@ -1,0 +1,43 @@
+# Build directories
+build/
+.gradle/
+target/
+
+# IDE directories
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Maven & Gradle
+.mvn/
+mvnw
+mvnw.cmd
+pom.xml
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+README.md
+HELP.md
+*.md
+
+# Test results
+test-results/
+reports/
+
+# Other
+.env
+.env.local
+*.log
+
