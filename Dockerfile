@@ -1,5 +1,5 @@
 # Build stage
-FROM gradle:8.4-jdk21 AS builder
+FROM gradle:8.5-jdk21 AS build
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src ./src
 RUN ./gradlew build
 
 # Runtime stage
-FROM openjdk:21-slim
+FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
 
