@@ -1,5 +1,5 @@
 # Build stage
-FROM gradle:8.4-jdk26 AS builder
+FROM gradle:8.4-jdk21 AS builder
 
 WORKDIR /app
 
@@ -17,7 +17,7 @@ COPY src ./src
 RUN ./gradlew build
 
 # Runtime stage
-FROM openjdk:26-slim
+FROM openjdk:21-slim
 
 WORKDIR /app
 

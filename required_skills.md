@@ -3,7 +3,7 @@
 This project is a Spring Boot-based REST API for personal tracking. The following skills are required to work on this project:
 
 ## Core Technologies
-- **Java**: Proficiency in Java programming language (version 26 or compatible).
+- **Java**: Proficiency in Java programming language (version 21 or compatible).
 - **Spring Boot**: Knowledge of Spring Boot framework for building web applications.
 - **Spring Web MVC**: Understanding of RESTful web services using Spring MVC.
 

@@ -67,7 +67,7 @@ docker-compose down
 
 - **Multi-stage build**: Reduces image size by separating build and runtime stages
 - **Health checks**: Built-in health checks for container orchestration
-- **JDK 26**: Uses the latest Java version
+- **JDK 21**: Uses Java 21 for optimal performance and compatibility
 - **Minimal runtime**: Uses OpenJDK slim image for smaller footprint
 - **.dockerignore**: Excludes unnecessary files from the build context
 
@@ -106,4 +106,3 @@ docker ps
 ```bash
 docker rmi personal-tracker-api:latest
 ```
-
