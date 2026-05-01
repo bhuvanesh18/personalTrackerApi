@@ -10,7 +10,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -46,12 +48,15 @@ public class AuthController {
             if (authenticatedUser != null) {
                 String token = jwtService.generateToken(request.getMailId());
 
-                Cookie cookie = new Cookie("AUTH-TOKEN", token);
-                cookie.setHttpOnly(true);
-                cookie.setSecure(true); // Set to true in production with HTTPS
-                cookie.setPath("/");
-                cookie.setMaxAge(10 * 60 * 60); // 10 hours
-                response.addCookie(cookie);
+                ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", token)
+                        .httpOnly(true)
+                        .secure(true)    // Keep true for production/HTTPS
+                        .path("/")
+                        .maxAge(10 * 60 * 60)
+                        .sameSite("None") // Use "None" if FE and BE are on different domains
+                        .build();
+
+                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
                 Map<String, Object> responseBody = new HashMap<>();
                 responseBody.put("message", "Login successful");
@@ -107,16 +112,17 @@ public class AuthController {
     @Operation(summary = "User logout", description = "Log out the user by clearing the authentication token")
     @ApiResponse(responseCode = "200", description = "Logout successful")
     public ResponseEntity<?> logoutUser(HttpServletResponse response) {
-        Cookie cookie = new Cookie("AUTH-TOKEN", null);
-        cookie.setHttpOnly(true);
-        cookie.setSecure(true); // Set to true in production with HTTPS
-        cookie.setPath("/");
-        cookie.setMaxAge(0); // Expire the cookie immediately
-        response.addCookie(cookie);
-        Map<String, Object> responseBody = new HashMap<>();
-        responseBody.put("message", "User logout successful");
-        responseBody.put("token", null);
-        return ResponseEntity.status(HttpStatus.OK).body(responseBody);
+        ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", "")
+                .httpOnly(true)
+                .secure(true)    // Keep true for production/HTTPS
+                .path("/")
+                .maxAge(10 * 60 * 60)
+                .sameSite("None") // Use "None" if FE and BE are on different domains
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Logout successful"));
     }
 
 
