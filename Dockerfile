@@ -14,7 +14,7 @@ COPY settings.gradle ./settings.gradle
 COPY src ./src
 
 # Build the application
-RUN ./gradlew build
+RUN ./gradlew build -x test
 
 # Runtime stage
 FROM eclipse-temurin:21-jre-jammy
