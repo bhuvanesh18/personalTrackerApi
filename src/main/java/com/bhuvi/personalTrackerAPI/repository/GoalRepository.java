@@ -98,16 +98,20 @@ public class GoalRepository {
         }
     }
 
-    public int update(Goal goal) {
+    public Goal update(Goal goal) {
         try {
-            return jdbcTemplate.update(SqlConstants.UPDATE_GOAL,
+            int update = jdbcTemplate.update(SqlConstants.UPDATE_GOAL,
                     goal.getGoalName(),
                     goal.getGoalDescription(),
                     goal.getFrequency().toString(),
                     goal.getTarget(),
                     goal.getUnit().toString(),
-                    goal.getIsActive(),
+                    goal.getIsActive().toString(),
                     goal.getGoalId());
+            if (update != 1) {
+                throw new RuntimeException("Error saving goal: " + update);
+            }
+            return goal;
         } catch (Exception e) {
             throw new RuntimeException("Error updating goal: " + e.getMessage());
         }

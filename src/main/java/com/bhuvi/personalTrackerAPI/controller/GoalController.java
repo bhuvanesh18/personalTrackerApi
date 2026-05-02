@@ -55,10 +55,12 @@ public class GoalController {
                     if (goalDetails.getTarget() != null) goal.setTarget(goalDetails.getTarget());
                     if (goalDetails.getUnit() != null) goal.setUnit(goalDetails.getUnit());
                     if (goalDetails.getIsActive() != null) goal.setIsActive(goalDetails.getIsActive());
-                    Goal updatedGoal = goalRepository.save(goal);
+
+                    Goal updatedGoal = goalRepository.update(goal);
                     Map<String, Object> response = new HashMap<>();
                     response.put("message", "Goal updated successfully");
                     response.put("goal", updatedGoal);
+
                     return ResponseEntity.ok().body(response);
                 })
                 .orElse(ResponseEntity.notFound().build());
