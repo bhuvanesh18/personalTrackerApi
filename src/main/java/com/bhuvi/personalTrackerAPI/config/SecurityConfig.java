@@ -1,6 +1,7 @@
 package com.bhuvi.personalTrackerAPI.config;
 
 import com.bhuvi.personalTrackerAPI.service.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,27 +23,25 @@ import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-
-    @Autowired
-    private CustomUserDetailsService userDetailsService;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Link the CORS config here
-            .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/login", "/signup", "/test", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                    .anyRequest().authenticated()
-            )
-            .sessionManagement(session -> session
-                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            )
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(AbstractHttpConfigurer::disable) // Disable CSRF for APIs
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/login", "/signup", "/test", "/logout", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .logout(AbstractHttpConfigurer::disable)
+                .sessionManagement(session -> session
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

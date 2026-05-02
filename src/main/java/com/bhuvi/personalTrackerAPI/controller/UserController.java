@@ -5,6 +5,7 @@ import com.bhuvi.personalTrackerAPI.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,11 +16,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
+@RequiredArgsConstructor
 @Tag(name = "User API", description = "API for managing user registration and authentication")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     @GetMapping("/fetch/{userName}")
     @Operation(summary = "Get user by username", description = "Retrieve user details by username")

@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -23,20 +25,21 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/")
+@RequiredArgsConstructor
 @Tag(name = "Authentication API", description = "API for user authentication and login")
 public class AuthController {
 
-    @Autowired
-    AuthService authService;
+    private final AuthService authService;
 
-    @Autowired
-    JwtService jwtService;
+    private final JwtService jwtService;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
 
-    @Autowired
-    UserRepository userRepository;
+    @Value("${cookie.same-site}")
+    private String sameSite;
+
+    @Value("${cookie.secure}")
+    private boolean secure;
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user credentials and log in")
@@ -50,10 +53,10 @@ public class AuthController {
 
                 ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", token)
                         .httpOnly(true)
-                        .secure(true)    // Keep true for production/HTTPS
                         .path("/")
                         .maxAge(10 * 60 * 60)
-                        .sameSite("None") // Use "None" if FE and BE are on different domains
+                        .secure(this.secure)    // Keep true for production/HTTPS
+                        .sameSite(this.sameSite) // Use "None" if FE and BE are on different domains
                         .build();
 
                 response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -114,10 +117,10 @@ public class AuthController {
     public ResponseEntity<?> logoutUser(HttpServletResponse response) {
         ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", "")
                 .httpOnly(true)
-                .secure(true)    // Keep true for production/HTTPS
                 .path("/")
-                .maxAge(10 * 60 * 60)
-                .sameSite("None") // Use "None" if FE and BE are on different domains
+                .maxAge(0)
+                .secure(this.secure)    // Keep true for production/HTTPS
+                .sameSite(this.sameSite) // Use "None" if FE and BE are on different domains
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());

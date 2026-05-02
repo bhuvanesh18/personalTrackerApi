@@ -6,7 +6,7 @@ import com.bhuvi.personalTrackerAPI.repository.GoalLogRepository;
 import com.bhuvi.personalTrackerAPI.repository.GoalRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +16,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/goals")
+@RequiredArgsConstructor
 public class GoalController {
 
-    @Autowired
-    private GoalRepository goalRepository;
+    private final GoalRepository goalRepository;
 
-    @Autowired
-    private GoalLogRepository goalLogRepository;
+    private final GoalLogRepository goalLogRepository;
 
     @PostMapping("/create")
     @Operation(summary = "Create a new goal", description = "Create a new fitness/health goal for a user")

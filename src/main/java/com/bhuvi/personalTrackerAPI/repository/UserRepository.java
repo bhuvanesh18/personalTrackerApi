@@ -3,6 +3,7 @@ package com.bhuvi.personalTrackerAPI.repository;
 import com.bhuvi.personalTrackerAPI.constant.SqlConstants;
 import com.bhuvi.personalTrackerAPI.entity.User;
 import com.bhuvi.personalTrackerAPI.service.HashingService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -16,13 +17,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class UserRepository {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
-    @Autowired
-    private HashingService hashingService;
+    private final HashingService hashingService;
 
     private final RowMapper<User> userRowMapper = (rs, rowNum) -> {
         User user = new User();

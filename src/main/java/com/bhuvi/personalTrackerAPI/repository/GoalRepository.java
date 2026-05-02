@@ -2,6 +2,7 @@ package com.bhuvi.personalTrackerAPI.repository;
 
 import com.bhuvi.personalTrackerAPI.constant.SqlConstants;
 import com.bhuvi.personalTrackerAPI.entity.Goal;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
@@ -17,10 +18,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class GoalRepository {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     private final RowMapper<Goal> goalRowMapper = (rs, rowNum) -> {
         Goal goal = new Goal();

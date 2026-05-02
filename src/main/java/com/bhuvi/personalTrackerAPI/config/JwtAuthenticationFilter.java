@@ -6,7 +6,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,13 +21,12 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
 
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -58,6 +60,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // After setting the Authentication in the context, we specify
                 // that the current user is authenticated. So it passes the Spring Security Configurations successfully.
                 SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+
+
+                // --- REFRESH COOKIE LOGIC START ---
+                // We re-issue the same token (or a newly signed one) to reset the browser timer
+                ResponseCookie refreshCookie = ResponseCookie.from("AUTH-TOKEN", jwtToken)
+                        .httpOnly(true)
+                        .secure(true)    // Match your production/local setup
+                        .path("/")
+                        .maxAge(10 * 60 * 60) // Reset to 10 hours
+                        .sameSite("None")
+                        .build();
+
+                response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+                // --- REFRESH COOKIE LOGIC END ---
+
+
             }
         }
         filterChain.doFilter(request, response);

@@ -2,6 +2,7 @@ package com.bhuvi.personalTrackerAPI.service;
 
 import com.bhuvi.personalTrackerAPI.entity.User;
 import com.bhuvi.personalTrackerAPI.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -9,10 +10,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
 
     public User authenticateUser(User user) {
         User existingUser = userRepository.findByMailId(user.getMailId());
