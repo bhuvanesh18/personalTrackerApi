@@ -35,31 +35,15 @@ public class AuthController {
 
     private final UserRepository userRepository;
 
-    @Value("${cookie.same-site}")
-    private String sameSite;
-
-    @Value("${cookie.secure}")
-    private boolean secure;
-
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user credentials and log in")
     @ApiResponse(responseCode = "200", description = "Login successful")
     @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid credentials")
-    public ResponseEntity<?> loginUser(@RequestBody User request, HttpServletResponse response) {
+    public ResponseEntity<?> loginUser(@RequestBody User request) {
         try {
             User authenticatedUser = authService.authenticateUser(request);
             if (authenticatedUser != null) {
                 String token = jwtService.generateToken(request.getMailId());
-
-                ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", token)
-                        .httpOnly(true)
-                        .path("/")
-                        .maxAge(10 * 60 * 60)
-                        .secure(this.secure)    // Keep true for production/HTTPS
-                        .sameSite(this.sameSite) // Use "None" if FE and BE are on different domains
-                        .build();
-
-                response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
                 Map<String, Object> responseBody = new HashMap<>();
                 responseBody.put("message", "Login successful");
@@ -111,22 +95,23 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/logout")
-    @Operation(summary = "User logout", description = "Log out the user by clearing the authentication token")
-    @ApiResponse(responseCode = "200", description = "Logout successful")
-    public ResponseEntity<?> logoutUser(HttpServletResponse response) {
-        ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", "")
-                .httpOnly(true)
-                .path("/")
-                .maxAge(0)
-                .secure(this.secure)    // Keep true for production/HTTPS
-                .sameSite(this.sameSite) // Use "None" if FE and BE are on different domains
-                .build();
-
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Logout successful"));
-    }
+    // this is not in use any-more, since JWT token based authorization moved to http header instead of cookie (because cookie generation is blocked by browser when used in incognito)
+//    @PostMapping("/logout")
+//    @Operation(summary = "User logout", description = "Log out the user by clearing the authentication token")
+//    @ApiResponse(responseCode = "200", description = "Logout successful")
+//    public ResponseEntity<?> logoutUser(HttpServletResponse response) {
+//        ResponseCookie cookie = ResponseCookie.from("AUTH-TOKEN", "")
+//                .httpOnly(true)
+//                .path("/")
+//                .maxAge(0)
+//                .secure(true)    // Keep true for production/HTTPS | false for local development (HTTP)
+//                .sameSite("None") // Use "None" - if FE and BE are on different domains | "Lax" - for localhost
+//                .build();
+//
+//        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+//
+//        return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "Logout successful"));
+//    }
 
 
 }

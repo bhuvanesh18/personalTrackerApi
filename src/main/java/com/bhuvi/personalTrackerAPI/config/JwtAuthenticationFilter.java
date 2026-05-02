@@ -32,50 +32,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
-        final String requestTokenHeader = getTokenFromCookie(request);
+        // 1. Extract from Header instead of Cookie
+        final String authHeader = request.getHeader("Authorization");
+        final String jwtToken;
+        final String mailId;
 
-        String mailId = null;
-        String jwtToken = null;
-
-        // JWT Token is in the form "Bearer token" or just the token in cookie
-        if (requestTokenHeader != null) {
-            jwtToken = requestTokenHeader;
-            try {
-                mailId = jwtService.extractUserMailId(jwtToken);
-            } catch (Exception e) {
-                logger.error("Unable to get JWT Token or JWT Token has expired");
-            }
+        // JWT is usually sent as "Bearer <token>"
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
         }
 
-        // Once we get the token validate it.
+        jwtToken = authHeader.substring(7); // Remove "Bearer " prefix
+        try {
+            mailId = jwtService.extractUserMailId(jwtToken);
+        } catch (Exception e) {
+            logger.error("JWT Token validation failed");
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (mailId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(mailId);
 
-            // if token is valid configure Spring Security to manually set authentication
             if (jwtService.validateToken(jwtToken, userDetails)) {
-                UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                // After setting the Authentication in the context, we specify
-                // that the current user is authenticated. So it passes the Spring Security Configurations successfully.
-                SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+                SecurityContextHolder.getContext().setAuthentication(authToken);
 
-
-                // --- REFRESH COOKIE LOGIC START ---
-                // We re-issue the same token (or a newly signed one) to reset the browser timer
-                ResponseCookie refreshCookie = ResponseCookie.from("AUTH-TOKEN", jwtToken)
-                        .httpOnly(true)
-                        .secure(true)    // Match your production/local setup
-                        .path("/")
-                        .maxAge(10 * 60 * 60) // Reset to 10 hours
-                        .sameSite("None")
-                        .build();
-
-                response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
-                // --- REFRESH COOKIE LOGIC END ---
-
-
+                // DELETE: Remove the response.addHeader(HttpHeaders.SET_COOKIE...) logic
             }
         }
         filterChain.doFilter(request, response);
