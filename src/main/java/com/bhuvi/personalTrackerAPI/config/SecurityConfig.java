@@ -62,10 +62,18 @@ public class SecurityConfig {
         // Use setAllowedOriginPatterns or specific origins
         configuration.setAllowedOrigins(Arrays.asList(
                 "https://personal-tracker-pi-five.vercel.app",
-                "http://localhost:4200"
+                "http://localhost:4200", // For local web testing
+                "http://localhost",       // Capacitor Android default
+                "https://localhost",      // Capacitor Android (if SSL enabled)
+                "capacitor://localhost"   // Capacitor iOS default (good to have)
         ));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Cache-Control",
+                "Content-Type",
+                "Origin",
+                "Accept"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
