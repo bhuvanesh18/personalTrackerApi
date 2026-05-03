@@ -16,7 +16,7 @@ public class AuthService {
     private final UserRepository userRepository;
 
     public User authenticateUser(User user) {
-        User existingUser = userRepository.findByMailId(user.getMailId());
+        User existingUser = userRepository.findByVerifiedMailId(user.getMailId());
         if(existingUser != null) {
             if (userRepository.validatePassword(user.getPassword(), existingUser.getPassword())) {
                 return existingUser;

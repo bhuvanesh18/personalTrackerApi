@@ -4,7 +4,6 @@ import com.bhuvi.personalTrackerAPI.constant.SqlConstants;
 import com.bhuvi.personalTrackerAPI.entity.User;
 import com.bhuvi.personalTrackerAPI.service.HashingService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -44,6 +43,7 @@ public class UserRepository {
                 ps.setString(1, user.getUserName());
                 ps.setString(2, hashingService.hashPassword(user.getPassword()));
                 ps.setString(3, user.getMailId());
+                ps.setString(4, String.valueOf(user.getIsActive()));
                 return ps;
             }, keyHolder);
 
@@ -75,6 +75,15 @@ public class UserRepository {
         }
     }
 
+    public User findByVerifiedMailId(String mailId) {
+        try {
+            List<User> users = jdbcTemplate.query(SqlConstants.SELECT_USER_BY_VERIFIED_MAILID, userRowMapper, mailId);
+            return users.isEmpty() ? null : users.get(0);
+        }  catch (Exception e) {
+            return null;
+        }
+    }
+
     public boolean validatePassword(String rawPassword, String hashedPassword) {
         return hashingService.validatePassword(rawPassword, hashedPassword);
     }
@@ -99,9 +108,10 @@ public class UserRepository {
     public int update(User user) {
         try {
             return jdbcTemplate.update(SqlConstants.UPDATE_USER,
+                    user.getUserName(),
                     user.getPassword(),
                     user.getMailId(),
-                    user.getIsActive(),
+                    user.getIsActive().toString(),
                     user.getUserId());
         } catch (Exception e) {
             throw new RuntimeException("Error updating user: " + e.getMessage());

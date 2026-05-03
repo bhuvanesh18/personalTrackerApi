@@ -6,13 +6,16 @@ public class SqlConstants {
 
     public static final String INSERT_USER =
         "INSERT INTO users (userName, passwordHash, mailId, isActive, createdDate, lud) " +
-        "VALUES (?, ?, ?, 'Y', NOW(3), NOW(3))";
+        "VALUES (?, ?, ?, ?, NOW(3), NOW(3))";
 
     public static final String SELECT_USER_BY_USERNAME =
         "SELECT userId, userName, mailId, isActive, createdDate, lud FROM users WHERE userName = ?";
 
     public static final String SELECT_USER_BY_MAILID =
             "SELECT userId, userName, passwordHash, mailId, isActive, createdDate, lud FROM users WHERE mailId = ?";
+
+    public static final String SELECT_USER_BY_VERIFIED_MAILID =
+            "SELECT userId, userName, passwordHash, mailId, isActive, createdDate, lud FROM users WHERE mailId = ? and isActive = 'Y'";
 
 
     public static final String SELECT_USER_BY_ID =
@@ -22,7 +25,7 @@ public class SqlConstants {
         "SELECT userId, userName, mailId, isActive, createdDate, lud FROM users";
 
     public static final String UPDATE_USER =
-        "UPDATE users SET mailId = ?, isActive = ?, lud = NOW(3) WHERE userId = ?";
+        "UPDATE users SET userName = ?, passwordHash = ?, mailId = ?, isActive = ?, lud = NOW(3) WHERE userId = ?";
 
     public static final String DELETE_USER =
         "DELETE FROM users WHERE userId = ?";

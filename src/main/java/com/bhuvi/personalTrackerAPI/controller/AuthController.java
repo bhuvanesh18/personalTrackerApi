@@ -1,9 +1,12 @@
 package com.bhuvi.personalTrackerAPI.controller;
 
+import com.bhuvi.personalTrackerAPI.entity.OptVerificationRequest;
 import com.bhuvi.personalTrackerAPI.entity.User;
 import com.bhuvi.personalTrackerAPI.repository.UserRepository;
 import com.bhuvi.personalTrackerAPI.service.AuthService;
+import com.bhuvi.personalTrackerAPI.service.EmailService;
 import com.bhuvi.personalTrackerAPI.service.JwtService;
+import com.bhuvi.personalTrackerAPI.service.OptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,10 +33,10 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-
     private final JwtService jwtService;
-
     private final UserRepository userRepository;
+    private final EmailService emailService;
+    private final OptService optService;
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user credentials and log in")
@@ -82,7 +85,13 @@ public class AuthController {
                 throw new RuntimeException("Email is required");
             }
 
+            user.setIsActive('N'); // Set user as inactive until OTP verification
             User savedUser = userRepository.save(user);
+
+            final String otp = optService.generateOTP(4);
+            emailService.sendOtpMessage(user.getMailId(), otp);
+            optService.saveOtp(user.getMailId(), otp);
+
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User created successfully");
             response.put("mailId", savedUser.getMailId());
@@ -94,6 +103,53 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
+
+    // new post method to verify otp
+    @PostMapping("/verify-otp")
+    @Operation(summary = "Verify OTP", description = "Verify the OTP sent to user's email for account activation")
+    @ApiResponse(responseCode = "200", description = "OTP verified successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid OTP or email")
+    public ResponseEntity<?> verifyOtp(@RequestBody OptVerificationRequest request) {
+        try {
+
+            if (request.getMailId() == null || request.getMailId().trim().isEmpty()) {
+                throw new RuntimeException("Email is required");
+            }
+
+            if (request.getOtp() == null || request.getOtp().trim().isEmpty()) {
+                throw new RuntimeException("OTP is required");
+            }
+
+            boolean isValid = optService.verifyOtp(request.getMailId(), request.getOtp());
+            if (isValid) {
+
+                User user = userRepository.findByMailId(request.getMailId());
+                user.setIsActive('Y');
+                userRepository.update(user);
+
+                String token = jwtService.generateToken(request.getMailId()); // Generate JWT token after successful OTP verification
+
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "Verification completed successfully.");
+                response.put("token", token);
+                response.put("userId", String.valueOf(user.getUserId()));
+                response.put("userName", user.getUserName());
+                response.put("mailId", user.getMailId());
+                response.put("isActive", String.valueOf(user.getIsActive()));
+                response.put("createdDate", String.valueOf(user.getCreatedDate()));
+
+                return ResponseEntity.ok().body(response);
+            } else {
+                throw new RuntimeException("Invalid OTP or email");
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
+
 
     // this is not in use any-more, since JWT token based authorization moved to http header instead of cookie (because cookie generation is blocked by browser when used in incognito)
 //    @PostMapping("/logout")
