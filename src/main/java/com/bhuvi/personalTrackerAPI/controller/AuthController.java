@@ -89,8 +89,13 @@ public class AuthController {
             User savedUser = userRepository.save(user);
 
             final String otp = optService.generateOTP(4);
+            System.out.println("Generated a otp");
+            System.out.println("Sending OTP to user mail");
             emailService.sendOtpMessage(user.getMailId(), otp);
+            System.out.println("Sent OTP to user mail");
+            System.out.println("Saving OTP to cache");
             optService.saveOtp(user.getMailId(), otp);
+            System.out.println("Saved OTP to cache");
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User created successfully");
