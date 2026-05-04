@@ -1,20 +1,43 @@
 package com.bhuvi.personalTrackerAPI.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.List;
+import java.util.Map;
+
+import static com.bhuvi.personalTrackerAPI.constant.MailTemplate.signupVerificationTemplate;
 
 @Service
 @RequiredArgsConstructor
 public class EmailService {
-    private final JavaMailSender mailSender;
 
-    public void sendOtpMessage(String to, String otp) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Personal Tracker APP: Your OTP Verification Code");
-        message.setText("Your otp is: " + otp + ". It expires in 5 minutes.");
-        mailSender.send(message);
+    @Value("${brevo.api.key}")
+    private String apiKey;
+
+    @Value("${brevo.sender.email}")
+    private String senderEmail;
+
+    private final RestClient restClient = RestClient.create();
+
+    public void sendEmail(String toEmail, String subject, String otp) {
+        Map<String, Object> requestBody = Map.of(
+                "sender", Map.of("name", "Personal Tracker", "email", senderEmail),
+                "to", List.of(Map.of("email", toEmail)),
+                "subject", subject,
+                "htmlContent", signupVerificationTemplate.formatted(otp)
+        );
+
+        restClient.post()
+                .uri("https://api.brevo.com/v3/smtp/email")
+                .header("api-key", apiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(requestBody)
+                .retrieve()
+                .toBodilessEntity();
     }
+
 }

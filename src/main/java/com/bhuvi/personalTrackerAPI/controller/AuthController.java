@@ -91,7 +91,7 @@ public class AuthController {
             final String otp = optService.generateOTP(4);
             System.out.println("Generated a otp");
             System.out.println("Sending OTP to user mail");
-            emailService.sendOtpMessage(user.getMailId(), otp);
+            emailService.sendEmail(user.getMailId(), "Personal Tracker: Account Signup Verification", otp);
             System.out.println("Sent OTP to user mail");
             System.out.println("Saving OTP to cache");
             optService.saveOtp(user.getMailId(), otp);
