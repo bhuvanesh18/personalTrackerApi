@@ -1,5 +1,6 @@
 package com.bhuvi.personalTrackerAPI.service;
 
+import com.bhuvi.personalTrackerAPI.constant.MailTemplate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -8,8 +9,6 @@ import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.bhuvi.personalTrackerAPI.constant.MailTemplate.signupVerificationTemplate;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class EmailService {
                 "sender", Map.of("name", "Personal Tracker", "email", senderEmail),
                 "to", List.of(Map.of("email", toEmail)),
                 "subject", subject,
-                "htmlContent", signupVerificationTemplate.formatted(otp)
+                "htmlContent", MailTemplate.signupVerificationTemplate.formatted(otp)
         );
 
         restClient.post()
