@@ -5,27 +5,26 @@ public class SqlConstants {
     // ==================== User SQL ====================
 
     public static final String INSERT_USER =
-        "INSERT INTO users (userName, passwordHash, mailId, isActive, createdDate, lud) " +
-        "VALUES (?, ?, ?, ?, NOW(3), NOW(3))";
+        "INSERT INTO users (userName, passwordHash, mailId, gender, isActive, createdDate, lud) " +
+        "VALUES (?, ?, ?, ?, ?, NOW(3), NOW(3))";
 
     public static final String SELECT_USER_BY_USERNAME =
-        "SELECT userId, userName, mailId, isActive, createdDate, lud FROM users WHERE userName = ?";
+        "SELECT userId, userName, mailId, gender, isActive, createdDate, lud FROM users WHERE userName = ?";
 
     public static final String SELECT_USER_BY_MAILID =
-            "SELECT userId, userName, passwordHash, mailId, isActive, createdDate, lud FROM users WHERE mailId = ?";
+            "SELECT userId, userName, passwordHash, mailId, gender, isActive, createdDate, lud FROM users WHERE mailId = ?";
 
     public static final String SELECT_USER_BY_VERIFIED_MAILID =
-            "SELECT userId, userName, passwordHash, mailId, isActive, createdDate, lud FROM users WHERE mailId = ? and isActive = 'Y'";
-
+            "SELECT userId, userName, passwordHash, mailId, gender, isActive, createdDate, lud FROM users WHERE mailId = ? and isActive = 'Y'";
 
     public static final String SELECT_USER_BY_ID =
-        "SELECT userId, userName, mailId, isActive, createdDate, lud FROM users WHERE userId = ?";
+        "SELECT userId, userName, mailId, gender, isActive, createdDate, lud FROM users WHERE userId = ?";
 
     public static final String SELECT_ALL_USERS =
-        "SELECT userId, userName, mailId, isActive, createdDate, lud FROM users";
+        "SELECT userId, userName, mailId, gender, isActive, createdDate, lud FROM users";
 
     public static final String UPDATE_USER =
-        "UPDATE users SET userName = ?, passwordHash = ?, mailId = ?, isActive = ?, lud = NOW(3) WHERE userId = ?";
+        "UPDATE users SET userName = ?, passwordHash = ?, mailId = ?, gender = ?, isActive = ?, lud = NOW(3) WHERE userId = ?";
 
     public static final String DELETE_USER =
         "DELETE FROM users WHERE userId = ?";

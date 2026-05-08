@@ -12,6 +12,7 @@ public class User {
     private String userName;
     private String password;
     private String mailId;
+    private Character gender;
     private Character isActive = 'Y';
     private LocalDateTime createdDate;
     private LocalDateTime lud;

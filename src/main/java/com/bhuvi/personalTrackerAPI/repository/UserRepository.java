@@ -29,6 +29,7 @@ public class UserRepository {
         user.setMailId(rs.getString("mailId"));
         user.setUserName(rs.getString("userName"));
         user.setPassword(rs.getString("passwordHash"));
+        user.setGender(rs.getString("gender").charAt(0));
         user.setIsActive(rs.getString("isActive").charAt(0));
         user.setCreatedDate(rs.getTimestamp("createdDate").toLocalDateTime());
         user.setLud(rs.getTimestamp("lud").toLocalDateTime());
@@ -43,7 +44,8 @@ public class UserRepository {
                 ps.setString(1, user.getUserName());
                 ps.setString(2, hashingService.hashPassword(user.getPassword()));
                 ps.setString(3, user.getMailId());
-                ps.setString(4, String.valueOf(user.getIsActive()));
+                ps.setString(4, String.valueOf(user.getGender()));
+                ps.setString(5, String.valueOf(user.getIsActive()));
                 return ps;
             }, keyHolder);
 
@@ -111,6 +113,7 @@ public class UserRepository {
                     user.getUserName(),
                     user.getPassword(),
                     user.getMailId(),
+                    user.getGender().toString(),
                     user.getIsActive().toString(),
                     user.getUserId());
         } catch (Exception e) {

@@ -35,8 +35,6 @@ public class AuthController {
     private final AuthService authService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
-    private final EmailService emailService;
-    private final OptService optService;
 
     @PostMapping("/login")
     @Operation(summary = "User login", description = "Authenticate user credentials and log in")
@@ -54,6 +52,7 @@ public class AuthController {
                 responseBody.put("userId", authenticatedUser.getUserId());
                 responseBody.put("userName", authenticatedUser.getUserName());
                 responseBody.put("mailId", authenticatedUser.getMailId());
+                responseBody.put("gender", authenticatedUser.getGender());
                 responseBody.put("isActive", authenticatedUser.getIsActive());
                 responseBody.put("createdDate", authenticatedUser.getCreatedDate());
 
@@ -84,18 +83,14 @@ public class AuthController {
             if (user.getMailId() == null || user.getMailId().trim().isEmpty()) {
                 throw new RuntimeException("Email is required");
             }
+            if (user.getGender() == null || !(user.getGender() == 'M' || user.getGender() == 'F' || user.getGender() == 'O')) {
+                throw new RuntimeException("Gender must be 'M', 'F', or 'O'");
+            }
 
             user.setIsActive('N'); // Set user as inactive until OTP verification
             User savedUser = userRepository.save(user);
 
-            final String otp = optService.generateOTP(4);
-            System.out.println("Generated a otp");
-            System.out.println("Sending OTP to user mail");
-            emailService.sendEmail(user.getMailId(), "Personal Tracker: Account Signup Verification", otp);
-            System.out.println("Sent OTP to user mail");
-            System.out.println("Saving OTP to cache");
-            optService.saveOtp(user.getMailId(), otp);
-            System.out.println("Saved OTP to cache");
+            authService.generateOtpAndMail(user.getMailId(), "Personal Tracker: Account Signup Verification");
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", "User created successfully");
@@ -109,7 +104,33 @@ public class AuthController {
         }
     }
 
-    // new post method to verify otp
+    @PostMapping("/generate-otp")
+    @Operation(summary = "Generate OTP", description = "Generate a new OTP and send to user's email for verification")
+    @ApiResponse(responseCode = "200", description = "OTP generated and sent successfully")
+    @ApiResponse(responseCode = "400", description = "Invalid email")
+    public ResponseEntity<?> generateOtp(@RequestBody Map<String, String> request) {
+        try {
+            String mailId = request.get("mailId");
+            if (mailId == null || mailId.trim().isEmpty()) {
+                throw new RuntimeException("Email is required");
+            }
+
+            User user = userRepository.findByMailId(mailId);
+            if(user != null){
+                authService.generateOtpAndMail(mailId, "Personal Tracker: Password Reset Verification");
+                Map<String, String> response = new HashMap<>();
+                response.put("message", "OTP generated and email sent successfully");
+                return ResponseEntity.ok().body(response);
+            } else  {
+                throw new RuntimeException("Invalid emailId");
+            }
+        } catch (Exception e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+    }
+
     @PostMapping("/verify-otp")
     @Operation(summary = "Verify OTP", description = "Verify the OTP sent to user's email for account activation")
     @ApiResponse(responseCode = "200", description = "OTP verified successfully")
@@ -125,9 +146,7 @@ public class AuthController {
                 throw new RuntimeException("OTP is required");
             }
 
-            boolean isValid = optService.verifyOtp(request.getMailId(), request.getOtp());
-            if (isValid) {
-
+            if (authService.verifyOtp(request.getMailId(), request.getOtp())) {
                 User user = userRepository.findByMailId(request.getMailId());
                 user.setIsActive('Y');
                 userRepository.update(user);
@@ -140,6 +159,7 @@ public class AuthController {
                 response.put("userId", String.valueOf(user.getUserId()));
                 response.put("userName", user.getUserName());
                 response.put("mailId", user.getMailId());
+                response.put("gender",  String.valueOf(user.getGender()));
                 response.put("isActive", String.valueOf(user.getIsActive()));
                 response.put("createdDate", String.valueOf(user.getCreatedDate()));
 
